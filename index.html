@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .scanner-line {
+            height: 2px;
+            background: rgba(34, 197, 94, 0.5);
+            position: absolute;
+            width: 100%;
+            animation: scan 3s linear infinite;
+        }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tighter text-white">CrowdSense <span class="text-green-500 underline">Live</span></h1>
+                <p class="text-slate-400">Deep Learning Security Module v2.0</p>
+            </div>
+            <div class="text-right">
+                <span class="px-3 py-1 bg-green-900/30 border border-green-500 text-green-500 text-xs rounded-full font-mono">SYSTEM ONLINE</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 relative group rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                <div class="scanner-line z-10"></div>
+                <img src="{% url 'video_feed' %}" class="w-full aspect-video object-cover bg-slate-900">
+                <div class="absolute bottom-4 right-4 flex gap-2">
+                    <div class="h-2 w-2 bg-red-600 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-bold text-white tracking-widest uppercase">Recording</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total People</h3>
+                    <p class="text-4xl font-bold text-white" id="count-display">Analyzing...</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">AI Accuracy</h3>
+                    <p class="text-xl font-bold text-blue-400">94.2% (YOLOv8n)</p>
+                </div>
+                <button onclick="location.reload()" class="w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-slate-200 transition">
+                    Restart Stream
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

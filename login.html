@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SENTRY AI - LOGIN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-slate-900 p-10 rounded-[2.5rem] border-4 border-slate-800 shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-black italic tracking-tighter">SENTRY <span class="text-red-600">AI</span></h1>
+            <p class="text-slate-500 font-mono text-xs uppercase tracking-widest mt-2">Secure Access Portal</p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if error %}
+            <div class="bg-red-900/40 border border-red-500 text-red-200 px-4 py-3 rounded-xl text-sm font-bold">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Username</label>
+                <input type="text" name="username" required placeholder="Enter ID"
+                    class="w-full bg-black border-2 border-slate-800 rounded-2xl px-5 py-4 focus:border-red-600 outline-none transition-all font-mono text-white">
+            </div>
+
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Password</label>
+                <input type="password" name="password" required placeholder="••••••••"
+                    class="w-full bg-black border-2 border-slate-800 rounded-2xl px-5 py-4 focus:border-red-600 outline-none transition-all font-mono text-white">
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-red-600 hover:bg-red-500 text-white font-black py-5 rounded-2xl text-xl transition-all active:scale-95 shadow-lg shadow-red-900/30">
+                AUTHORIZE LOGIN
+            </button>
+            <div class="flex justify-end mt-1">
+    <a href="{% url 'password_reset' %}" class="text-red-500 font-bold uppercase text-xs">Forgot Password?</a>
+</div>
+
+            <div class="text-center mt-6 pt-4 border-t border-slate-800">
+                <p class="text-slate-500 text-sm">New Operator?</p>
+                <a href="{% url 'register' %}" class="text-red-500 hover:text-red-400 font-black uppercase tracking-tighter text-lg transition-colors">
+                    Create Account
+                </a>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

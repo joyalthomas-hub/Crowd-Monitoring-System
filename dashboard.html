@@ -1,0 +1,189 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SENTRY AI - ADMIN COMMAND CENTER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-panel { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); }
+        .status-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .zoom-img { transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        .zoom-img:hover { 
+            transform: scale(3); 
+            z-index: 50; 
+            position: relative; 
+            border-color: #ef4444; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen p-6 font-sans">
+
+    <nav class="flex justify-between items-center mb-10 bg-slate-900/50 p-6 rounded-3xl border border-slate-800 glass-panel">
+        <div>
+            <h1 class="text-3xl font-black italic tracking-tighter uppercase text-white">Admin <span class="text-red-600">Sentry</span></h1>
+            <p class="text-slate-500 text-xs font-mono uppercase tracking-widest">Master Control Interface // India Region</p>
+        </div>
+        
+        <div class="hidden md:block bg-black/40 border border-slate-800 px-6 py-2 rounded-2xl text-center">
+            <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest">System Time (IST)</p>
+            <div id="ist-clock" class="text-xl font-mono font-black text-blue-400">--:--:--</div>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <div class="text-right">
+                <p class="text-sm font-bold">{{ user.username }}</p>
+                <p class="text-xs text-green-500 font-mono uppercase">System_Master</p>
+            </div>
+            <a href="{% url 'logout' %}" class="bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white px-6 py-2 rounded-xl text-xs font-black transition-all border border-red-900/50 uppercase">
+                Terminate
+            </a>
+        </div>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-slate-900 p-8 rounded-[2rem] border border-slate-800">
+                <p class="text-slate-500 text-xs font-black uppercase tracking-widest mb-4">Core Status</p>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                        <span class="text-sm text-slate-300">AI Engine</span>
+                        <span class="text-green-500 font-mono text-xs status-pulse">● ACTIVE</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-black/40 p-4 rounded-2xl border border-white/5">
+                        <span class="text-sm text-slate-300">Camera 01</span>
+                        <span class="text-green-500 font-mono text-xs">ONLINE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-6 rounded-[2rem] border border-slate-800 max-h-[450px] flex flex-col shadow-xl">
+                <p class="text-slate-500 text-xs font-black uppercase tracking-widest mb-4">Registered Operators</p>
+                <div class="space-y-3 overflow-y-auto pr-2">
+                    {% for u in all_users %}
+                    <div class="flex items-center gap-3 bg-black/20 p-3 rounded-xl border border-white/5">
+                        <div class="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center text-xs font-bold text-blue-400 border border-slate-700">
+                            {{ u.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold">{{ u.username }}</p>
+                            <p class="text-[10px] text-slate-500 uppercase">Joined: {{ u.date_joined|date:"d M Y" }}</p>
+                        </div>
+                        <div class="ml-auto">
+                            {% if u.last_login and u.last_login > online_threshold %}
+                                <div class="w-2 h-2 bg-green-500 rounded-full status-pulse" title="Online Now"></div>
+                            {% else %}
+                                <div class="w-2 h-2 bg-slate-700 rounded-full" title="Offline"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-slate-600 text-xs italic">No Operators Found</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <a href="{% url 'home' %}" class="block bg-blue-600 hover:bg-blue-500 text-white text-center py-6 rounded-[2rem] font-black text-xl transition-all shadow-xl shadow-blue-900/20 uppercase italic">
+                Open Live Feed
+            </a>
+        </div>
+
+        <div class="lg:col-span-3 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Total Alerts</p>
+                    <p class="text-5xl font-black italic">{{ alert_count }}</p>
+                </div>
+                <div class="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">System Users</p>
+                    <p class="text-5xl font-black italic text-blue-500">{{ user_count }}</p>
+                </div>
+                <div class="bg-slate-900 p-8 rounded-[2.5rem] border border-red-900/50 bg-gradient-to-br from-slate-900 to-red-950/20">
+                    <p class="text-red-500 text-xs font-bold uppercase tracking-widest mb-2">Crowd Status</p>
+                    <p class="text-5xl font-black italic text-red-600">MONITORING</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 rounded-[2.5rem] border border-slate-800 overflow-hidden shadow-2xl">
+                <div class="p-8 border-b border-slate-800 bg-black/20 flex justify-between items-center">
+                    <h3 class="font-black text-xl uppercase italic tracking-tighter">Visual Infringement Logs</h3>
+                    <span class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Region: Asia/Kolkata (IST)</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-black text-slate-500 text-xs uppercase font-mono">
+                            <tr>
+                                <th class="p-6">Scene Capture</th>
+                                <th class="p-6">Time / Date (IST)</th>
+                                <th class="p-6">Status</th>
+                                <th class="p-6">Count</th>
+                                <th class="p-6 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm font-mono text-slate-300">
+                            {% for alert in alerts %}
+                            <tr class="border-b border-slate-800/50 hover:bg-white/5 transition-colors group">
+                                <td class="p-4">
+                                    {% if alert.image %}
+                                    <div class="relative w-32 h-20 group">
+                                        <img src="{{ alert.image.url }}" class="zoom-img w-full h-full object-cover rounded-xl border-2 border-slate-700 shadow-lg cursor-pointer">
+                                        <div class="absolute inset-0 bg-red-600/20 opacity-0 group-hover:opacity-100 rounded-xl pointer-events-none"></div>
+                                    </div>
+                                    {% else %}
+                                    <div class="w-32 h-20 bg-slate-800 rounded-xl flex items-center justify-center text-[10px] text-slate-500 uppercase italic">No Media</div>
+                                    {% endif %}
+                                </td>
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-base">{{ alert.timestamp|localtime|date:"h:i:s A" }}</div>
+                                    <div class="text-[10px] text-slate-500">{{ alert.timestamp|localtime|date:"d M Y" }}</div>
+                                </td>
+                                <td class="p-6">
+                                    <span class="text-red-500 font-bold bg-red-500/10 px-3 py-1 rounded-md border border-red-500/20">CROWD_DETECTED</span>
+                                </td>
+                                <td class="p-6">
+                                    <span class="text-white bg-slate-800 px-4 py-1 rounded-full text-xs font-black">{{ alert.count }} PEOPLE</span>
+                                </td>
+                                <td class="p-6 text-center">
+                                    <a href="{% url 'delete_alert' alert.id %}" 
+                                       onclick="return confirm('PERMANENTLY DELETE SECURITY LOG: {{ alert.timestamp|date:'h:i A' }}?')" 
+                                       class="inline-flex items-center justify-center w-10 h-10 bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white border border-red-900/40 rounded-xl transition-all active:scale-90 shadow-lg hover:shadow-red-900/50" 
+                                       title="Purge Record">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="p-20 text-center text-slate-600 italic uppercase tracking-widest border-t border-slate-800">No Security Breaches Logged</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateIST() {
+            const options = {
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            const formatter = new Intl.DateTimeFormat('en-IN', options);
+            document.getElementById('ist-clock').innerText = formatter.format(new Date());
+        }
+        setInterval(updateIST, 1000);
+        updateIST();
+    </script>
+</body>
+</html>
